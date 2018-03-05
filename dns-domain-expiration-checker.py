@@ -21,8 +21,8 @@ import smtplib
 import dateutil.parser
 import subprocess
 from datetime import datetime
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEText import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 EXPIRE_STRINGS = [ "Registry Expiry Date:",
                    "Expiration:",
@@ -73,7 +73,7 @@ def make_whois_query(domain):
         sys.exit(1)
 
     try:
-        whois_data = p.communicate()[0]
+        whois_data = p.communicate()[0].decode('ascii')
     except Exception as e:
         print("Unable to read from the Popen pipe. Exception %s" % e)
         sys.exit(1)
@@ -118,7 +118,7 @@ def calculate_expiration_days(expire_days, expiration_date):
         print("Unable to calculate the expiration days")
         sys.exit(1)
 
-    if domain_expire.days < expire_days:
+    if domain_expire.days < int(expire_days):
         return domain_expire.days
     else:
         return 0
