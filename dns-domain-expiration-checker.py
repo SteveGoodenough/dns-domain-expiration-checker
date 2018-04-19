@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Program: DNS Domain Expiration Checker
 # Author: Matty < matty91 at gmail dot com >
 # Current Version: 7.0
