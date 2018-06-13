@@ -1,1 +1,5 @@
 domains
+domains.json
+Pipfile
+Pipfile.lock
+.vscode/settings.json

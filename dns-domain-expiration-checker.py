@@ -20,6 +20,7 @@ import argparse
 import smtplib
 import dateutil.parser
 import subprocess
+import json
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -189,12 +190,14 @@ def processcli():
     """
     parser = argparse.ArgumentParser(description='DNS Statistics Processor')
 
+    parser.add_argument('--domainjsonfile', help="Path to file with list of domains and expiration intervals in json format.")
     parser.add_argument('--domainfile', help="Path to file with list of domains and expiration intervals.")
     parser.add_argument('--domainname', help="Domain to check expiration on.")
     parser.add_argument('--email', action="store_true", help="Enable debugging output.")
+    #parser.add_argument('--formatjson', action="store_true", help="Use JSON format for input (domainfile) and output.")
     parser.add_argument('--interactive',action="store_true", help="Enable debugging output.")
     parser.add_argument('--expiredays', default=10000, type=int, help="Expiration threshold to check against.")
-    parser.add_argument('--sleeptime', default=60, type=int, help="Time to sleep between whois queries.")
+    parser.add_argument('--sleeptime', default=10, type=int, help="Time to sleep between whois queries.")
     parser.add_argument('--smtpserver', default="localhost", help="SMTP server to use.")
     parser.add_argument('--smtpport', default=25, help="SMTP port to connect to.")
     parser.add_argument('--smtpto', default="root", help="SMTP To: address.")
@@ -214,7 +217,32 @@ def main():
     if conf_options["interactive"]:
         print_heading()
 
-    if conf_options["domainfile"]:
+    if conf_options["domainjsonfile"]:
+        with open(conf_options["domainjsonfile"], "r") as domains_to_process:
+            domains_json = json.load(domains_to_process)
+            domains = domains_json["domains"]
+            for domain in domains:
+                try:
+                    domainname = domain.get("domain")
+                    expiration_days = domain.get("expiration")
+                except Exception as e:
+                    print("Unable to parse json configuration file.")
+                    sys.exit(1)
+
+                expiration_date, registrar = make_whois_query(domainname)
+                days_remaining = calculate_expiration_days(expiration_days, expiration_date)
+
+                if check_expired(expiration_days, days_remaining):
+                    domain_expire_notify(domainname, conf_options, days_remaining)
+
+                if conf_options["interactive"]:
+                    print_domain(domainname, registrar, expiration_date, days_remaining)
+
+                # Need to wait between queries to avoid triggering DOS measures like so:
+                # Your IP has been restricted due to excessive access, please wait a bit
+                time.sleep(conf_options["sleeptime"])
+
+    elif conf_options["domainfile"]:
         with open(conf_options["domainfile"], "r") as domains_to_process:
             for line in domains_to_process:
                 try:
