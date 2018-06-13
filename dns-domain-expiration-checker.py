@@ -248,7 +248,8 @@ def main():
 
         # Need to wait between queries to avoid triggering DOS measures like so:
         # Your IP has been restricted due to excessive access, please wait a bit
-        time.sleep(conf_options["sleeptime"])
+        #time.sleep(conf_options["sleeptime"])
+        # only 1 domain this way so why wait
  
 
 if __name__ == "__main__":
