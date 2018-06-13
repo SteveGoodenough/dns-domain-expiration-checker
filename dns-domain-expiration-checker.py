@@ -36,7 +36,7 @@ REGISTRAR_STRINGS = [
                       "Registrar:"
                     ]
 
-DEBUG = 0
+DEBUG = 1
 
 
 def debug(string_to_print):
@@ -194,6 +194,7 @@ def processcli():
     parser.add_argument('--domainfile', help="Path to file with list of domains and expiration intervals.")
     parser.add_argument('--domainname', help="Domain to check expiration on.")
     parser.add_argument('--email', action="store_true", help="Enable debugging output.")
+    parser.add_argument('--format', default="text", help="Format for input (domainfile) and output. Text (default) or Json.")
     parser.add_argument('--interactive',action="store_true", help="Enable debugging output.")
     parser.add_argument('--expiredays', default=10000, type=int, help="Expiration threshold to check against.")
     parser.add_argument('--sleeptime', default=1, type=int, help="Time to sleep between whois queries.")
@@ -216,9 +217,12 @@ def main():
     if conf_options["interactive"]:
         print_heading()
 
-    if conf_options["domainjsonfile"]:
-        datastore = []
-        with open(conf_options["domainjsonfile"], "r") as domains_to_process:
+    JSON = (conf_options["format"].upper() == "JSON")
+
+    if (JSON and conf_options["domainfile"]):
+        debug("Format in JSON")
+        domain_result = []
+        with open(conf_options["domainfile"], "r") as domains_to_process:
             domains = json.load(domains_to_process)
             for domain in domains["domains"]:
                 try:
@@ -237,16 +241,17 @@ def main():
                 if conf_options["interactive"]:
                     print_domain(domainname, registrar, expiration_date, days_remaining)
 
-                datastore.append({"domain": domainname,"registrar":registrar,"days_remaining":days_remaining})
+                domain_result.append({"domain": domainname,"registrar":registrar,"days_remaining":days_remaining})
                 
                 # Need to wait between queries to avoid triggering DOS measures like so:
                 # Your IP has been restricted due to excessive access, please wait a bit
                 time.sleep(conf_options["sleeptime"])
 
             with open("./domainresult.json", 'w') as f:
-                json.dump(datastore, f)
+                json.dump(domain_result, f)
 
-    elif conf_options["dtomainfile"]:
+    elif (JSON == False and conf_options["doomainfile"]):
+        debug("Format in Text")
         with open(conf_options["domainfile"], "r") as domains_to_process:
             for line in domains_to_process:
                 try:
