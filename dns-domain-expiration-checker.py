@@ -96,14 +96,26 @@ def parse_whois_data(whois_data):
     debug("Parsing the whois data blob %s" % whois_data)
     expiration_date = "00/00/00 00:00:00"
     registrar = "Unknown"
+    registrar_is_next = False
+    found_parts = 0
 
     for line in whois_data.splitlines():
+        if registrar_is_next:
+            registrar = line.strip()
+            found_parts += 1
+            registrar_is_next = False
+
         if any(expire_string in line for expire_string in EXPIRE_STRINGS):
             expiration_date = dateutil.parser.parse(line.partition(": ")[2], ignoretz=True)
+            found_parts += 1
 
         if any(registrar_string in line for registrar_string in
                REGISTRAR_STRINGS):
             registrar = line.split("Registrar:")[1].strip()
+            registrar_is_next = (len(registrar) == 0)
+            if not registrar_is_next: found_parts += 1
+
+        if (found_parts==2) : break
 
     return expiration_date, registrar
 
