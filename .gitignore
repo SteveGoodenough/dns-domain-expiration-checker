@@ -1,5 +1,6 @@
 domains
 domains.json
+domainresult.json
 Pipfile
 Pipfile.lock
-.vscode/settings.json
+.vscode/
