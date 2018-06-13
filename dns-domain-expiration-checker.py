@@ -24,9 +24,11 @@ from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-EXPIRE_STRINGS = [ "Registry Expiry Date:",
+EXPIRE_STRINGS = [ "Expiry date:",
+                   "Registry Expiry Date:",
                    "Expiration:",
-                   "Domain Expiration Date"
+                   "Domain Expiration Date",
+                   "Registrar Registration Expiration Date:"
                  ]
 
 REGISTRAR_STRINGS = [
