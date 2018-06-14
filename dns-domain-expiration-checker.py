@@ -36,7 +36,7 @@ REGISTRAR_STRINGS = [
                       "Registrar:"
                     ]
 
-DEBUG = 1
+DEBUG = 0
 
 
 def debug(string_to_print):
@@ -219,60 +219,60 @@ def main():
 
     JSON = (conf_options["format"].upper() == "JSON")
 
-    if (JSON and conf_options["domainfile"]):
-        debug("Format in JSON")
-        domain_result = []
-        with open(conf_options["domainfile"], "r") as domains_to_process:
-            domains = json.load(domains_to_process)
-            for domain in domains["domains"]:
-                try:
-                    domainname = domain.get("domain")
-                    expiration_days = domain.get("expiration")
-                except Exception as e:
-                    print("Unable to parse json configuration file.")
-                    sys.exit(1)
+    if ( conf_options["domainfile"]):
+        if JSON:
+            debug("Format in JSON")
+            domain_result = []
+            with open(conf_options["domainfile"], "r") as domains_to_process:
+                domains = json.load(domains_to_process)
+                for domain in domains["domains"]:
+                    try:
+                        domainname = domain.get("domain")
+                        expiration_days = domain.get("expiration")
+                    except Exception as e:
+                        print("Unable to parse json configuration file.")
+                        sys.exit(1)
 
-                expiration_date, registrar = make_whois_query(domainname)
-                days_remaining = calculate_expiration_days(expiration_days, expiration_date)
+                    expiration_date, registrar = make_whois_query(domainname)
+                    days_remaining = calculate_expiration_days(expiration_days, expiration_date)
 
-                if check_expired(expiration_days, days_remaining):
-                    domain_expire_notify(domainname, conf_options, days_remaining)
+                    if check_expired(expiration_days, days_remaining):
+                        domain_expire_notify(domainname, conf_options, days_remaining)
 
-                if conf_options["interactive"]:
-                    print_domain(domainname, registrar, expiration_date, days_remaining)
+                    if conf_options["interactive"]:
+                        print_domain(domainname, registrar, expiration_date, days_remaining)
 
-                domain_result.append({"domain": domainname,"registrar":registrar,"days_remaining":days_remaining})
-                
-                # Need to wait between queries to avoid triggering DOS measures like so:
-                # Your IP has been restricted due to excessive access, please wait a bit
-                time.sleep(conf_options["sleeptime"])
+                    domain_result.append({"domain": domainname,"registrar":registrar,"days_remaining":days_remaining})
+                    
+                    # Need to wait between queries to avoid triggering DOS measures like so:
+                    # Your IP has been restricted due to excessive access, please wait a bit
+                    time.sleep(conf_options["sleeptime"])
 
-            with open("./domainresult.json", 'w') as f:
-                json.dump(domain_result, f)
+                with open("./domainresult.json", 'w') as f:
+                    json.dump(domain_result, f)
+        else:
 
-    elif (JSON == False and conf_options["doomainfile"]):
-        debug("Format in Text")
-        with open(conf_options["domainfile"], "r") as domains_to_process:
-            for line in domains_to_process:
-                try:
-                     domainname, expiration_days = line.split()
-                except Exception as e:
-                    print("Unable to parse configuration file. Problem line \"%s\"" % line.strip())
-                    sys.exit(1)
+            debug("Format in Text")
+            with open(conf_options["domainfile"], "r") as domains_to_process:
+                for line in domains_to_process:
+                    try:
+                        domainname, expiration_days = line.split()
+                    except Exception as e:
+                        print("Unable to parse configuration file. Problem line \"%s\"" % line.strip())
+                        sys.exit(1)
 
-                expiration_date, registrar = make_whois_query(domainname)
-                days_remaining = calculate_expiration_days(expiration_days, expiration_date)
+                    expiration_date, registrar = make_whois_query(domainname)
+                    days_remaining = calculate_expiration_days(expiration_days, expiration_date)
 
-                if check_expired(expiration_days, days_remaining):
-                    domain_expire_notify(domainname, conf_options, days_remaining)
+                    if check_expired(expiration_days, days_remaining):
+                        domain_expire_notify(domainname, conf_options, days_remaining)
 
-                if conf_options["interactive"]:
-                    print_domain(domainname, registrar, expiration_date, days_remaining)
+                    if conf_options["interactive"]:
+                        print_domain(domainname, registrar, expiration_date, days_remaining)
 
-                # Need to wait between queries to avoid triggering DOS measures like so:
-                # Your IP has been restricted due to excessive access, please wait a bit
-                time.sleep(conf_options["sleeptime"])
-
+                    # Need to wait between queries to avoid triggering DOS measures like so:
+                    # Your IP has been restricted due to excessive access, please wait a bit
+                    time.sleep(conf_options["sleeptime"])
     elif conf_options["domainname"]:
         expiration_date, registrar = make_whois_query(conf_options["domainname"])
         days_remaining = calculate_expiration_days(conf_options["expiredays"], expiration_date)
