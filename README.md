@@ -31,6 +31,16 @@ yahoo.com 60
 prefetch.net 2000
 google.com 80
 
+$ cat domains.json
+{"domains": [
+  { "domain": "google.co.uk",
+    "expiration": 30
+  },
+  { "domain": "bbc.co.uk",
+    "expiration": 30
+  }
+]}
+
 $ dns-domain-expiration-checker.py --domainfile domains --email --smtpserver smtp.mydomain --smtpto "biff" --smtpfrom "Root"
 </pre>
 
@@ -59,7 +69,3 @@ $ git clone https://github.com/Matty9191/dns-domain-expiration-checker.git
 $ dns-domain-expiration-checker/ns-domain-expiration-checker.py ....
 </pre>
 6. Automate the domain checking process.
-
-
-
-
