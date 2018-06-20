@@ -133,10 +133,11 @@ def calculate_expiration_days(expire_days, expiration_date):
         print("Unable to calculate the expiration days")
         sys.exit(1)
 
-    if domain_expire.days < int(expire_days):
-        return domain_expire.days
-    else:
-        return 0
+    # if domain_expire.days < int(expire_days):
+    #    return domain_expire.days
+    # else:
+    #     return 0
+    return domain_expire.days
 
 
 def check_expired(expiration_days, days_remaining):
