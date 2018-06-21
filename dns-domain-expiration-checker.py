@@ -35,7 +35,6 @@ EXPIRE_STRINGS = [ "Expiry date:",
 REGISTRAR_STRINGS = [
                       "Registrar:"
                     ]
-
 DEBUG = 0
 
 
@@ -255,7 +254,7 @@ def main():
                     json.dump(domain_result, f)
 
                 if conf_options["interactive"]:
-                    print(json.dumps(domain_result, sort_keys=False, indent=4))
+                    print(json.dumps(domain_result))
 
         else:
 
