@@ -1,0 +1,21 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: domain-checker
+  namespace: test
+spec:
+  selector:
+    matchLabels:
+      k8s-app: domain-checker
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        k8s-app: domain-checker
+    spec:
+      containers:
+      - name: domain-checker
+        image: eu.gcr.io/johnlewis-web/domain-checker:1.0.2
+        env:
+        - name: LOGLEVEL
+          value: "INFO"
