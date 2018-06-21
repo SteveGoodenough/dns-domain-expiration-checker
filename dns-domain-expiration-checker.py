@@ -191,7 +191,6 @@ def processcli():
     """
     parser = argparse.ArgumentParser(description='DNS Statistics Processor')
 
-    parser.add_argument('--domainjsonfile', help="Path to file with list of domains and expiration intervals in json format.")
     parser.add_argument('--domainfile', help="Path to file with list of domains and expiration intervals.")
     parser.add_argument('--domainname', help="Domain to check expiration on.")
     parser.add_argument('--email', action="store_true", help="Enable debugging output.")
@@ -215,10 +214,11 @@ def main():
     days_remaining = 0
     conf_options = processcli()
 
-    if conf_options["interactive"]:
+    JSON = (conf_options["format"].upper() == "JSON")
+
+    if (conf_options["interactive"] and not JSON):
         print_heading()
 
-    JSON = (conf_options["format"].upper() == "JSON")
 
     if ( conf_options["domainfile"]):
         if JSON:
@@ -237,13 +237,15 @@ def main():
                     expiration_date, registrar = make_whois_query(domainname)
                     days_remaining = calculate_expiration_days(expiration_days, expiration_date)
 
+                    alert_level = "Ok"
+
                     if check_expired(expiration_days, days_remaining):
                         domain_expire_notify(domainname, conf_options, days_remaining)
+                        alert_level = "Warning"
 
-                    if conf_options["interactive"]:
-                        print_domain(domainname, registrar, expiration_date, days_remaining)
+                    if (days_remaining <= 0): alert_level = "Error"
 
-                    domain_result.append({"domain": domainname,"registrar":registrar,"days_remaining":days_remaining})
+                    domain_result.append({"domain": domainname,"registrar":registrar,"days_remaining":days_remaining,"status":alert_level})
                     
                     # Need to wait between queries to avoid triggering DOS measures like so:
                     # Your IP has been restricted due to excessive access, please wait a bit
@@ -251,6 +253,10 @@ def main():
 
                 with open("./domainresult.json", 'w') as f:
                     json.dump(domain_result, f)
+
+                if conf_options["interactive"]:
+                    print(json.dumps(domain_result, sort_keys=False, indent=4))
+
         else:
 
             debug("Format in Text")
